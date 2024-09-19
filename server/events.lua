@@ -236,3 +236,45 @@ RegisterNetEvent("reportmenu:server:sendmessage", function(data)
         TriggerClientEvent("reportmenu:client:update", v.id, ActiveReports)
     end
 end)
+
+RegisterNetEvent("reportmenu:server:claim", function(data)
+    if not data then return Debug("[reportmenu:server:claim] missing first param") end
+
+    ---@type ActiveReport
+    local report = data.report
+
+    if not OnlineStaff[tonumber(source)] and report.id ~= source then
+        return Debug("[reportmenu:server:claim] Insufficient access perms from source.")
+    end
+
+    local targetReport = ActiveReports[report.reportId]
+
+    if not targetReport then return Debug("[reportmenu:server:claim] report not found.") end
+
+    if not targetReport.messages then
+        ActiveReports[report.reportId].messages = {}
+    end
+
+    ActiveReports[report.reportId].messages[#ActiveReports[report.reportId].messages + 1] = {
+        playerName = GetPlayerName(source),
+        playerId = source,
+        data = 'Claimed the report.',
+        timedate = ("%s | %s"):format(os.date("%X"), os.date("%x"))
+    }
+
+    ActiveReports[report.reportId].claimed = true
+
+    ---@diagnostic disable-next-line: param-type-mismatch
+    TriggerClientEvent("reportmenu:client:updateactivereport", report.id, ActiveReports[report.reportId])
+
+    for _, v in pairs(OnlineStaff) do
+        ShowNotification({
+            target = v.id,
+            title = "Report Menu | Report Claimed",
+            description = ("The report [%s] has been claimed"):format(report.reportId)
+        })
+
+        ---@diagnostic disable-next-line: param-type-mismatch Reason: it works, even if it's a string or a number.
+        TriggerClientEvent("reportmenu:client:update", v.id, ActiveReports)
+    end
+end)

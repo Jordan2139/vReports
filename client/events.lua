@@ -34,6 +34,7 @@ RegisterNetEvent("reportmenu:client:addactivereport", function(data)
 end)
 
 RegisterNetEvent("reportmenu:client:updateactivereport", function(report)
+    print("reportmenu:client:updateactivereport")
     if not report then return Debug("[reportmenu:client:updateactivereport] first param is null.") end
 
     local reportId = report.reportId
