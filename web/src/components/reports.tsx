@@ -61,6 +61,7 @@ export interface Report {
     nearestPlayers?: nearestPlayer[];
     messages: message[];
     reportId: string;
+    claimed: boolean;
 }
 
 const initStateCurrReport: Report = {
@@ -72,6 +73,7 @@ const initStateCurrReport: Report = {
     title: "",
     messages: [],
     reportId: "A1",
+    claimed: false,
 };
 
 interface Props {
@@ -119,6 +121,9 @@ const Reports: React.FC<Props> = ({ reports, myReports }) => {
                                                 </span>
                                                 <span className="ml-auto bg-background px-1 font-main text-sm">
                                                     {report.type}
+                                                </span>
+                                                <span className ="ml-auto bg-background px-1 font-main text-sm">
+                                                    {report.claimed ? "Claimed" : "Unclaimed"}
                                                 </span>
                                             </p>
                                             <div className="flex items-center mt-2">
@@ -299,6 +304,27 @@ const Reports: React.FC<Props> = ({ reports, myReports }) => {
                             >
                                 <FaPeoplePulling className="mr-1" /> Bring
                             </Button>
+                            <Button
+                            className={`text-xs rounded-[2px] m-0 border-[2px] ${
+                                currReport.claimed ? 'bg-gray-400' : 'bg-secondary'
+                            }`}
+                            onClick={() => {
+                                if (!currReport.claimed) {
+                                    fetchNui("reportmenu:nuicb:claim", currReport);
+                                    setCurrReport(initStateCurrReport);
+                                    setModalActive(false);
+                                }
+                            }}
+                            disabled={currReport.claimed}
+                        >
+                            {currReport.claimed ? (
+                                "Claimed"
+                            ) : (
+                                <>
+                                    <GiTeleport className="mr-1" /> Claim
+                                </>
+                            )}
+                        </Button>
                         </>
                     )}
                     <Button
