@@ -64,6 +64,18 @@ export interface Report {
     claimed: boolean;
 }
 
+export interface leaderBoard {
+    id: string | number;
+    name: string;
+    reports: number;
+}
+
+const leaderBoardActive: leaderBoard = {
+    id: 0,
+    name: "",
+    reports: 0,
+}
+
 const initStateCurrReport: Report = {
     id: 0,
     playerName: "",
@@ -79,10 +91,13 @@ const initStateCurrReport: Report = {
 interface Props {
     reports: Report[];
     myReports: boolean;
+    leaderBoard: leaderBoard[];
+    whatTab: string;
 }
 
-const Reports: React.FC<Props> = ({ reports, myReports }) => {
+const Reports: React.FC<Props> = ({ reports, myReports, leaderBoard, whatTab }) => {
     const [currReport, setCurrReport] = useState<Report>(initStateCurrReport);
+    const [currLeaderBoard, setLeaderBoardActive] = useState<leaderBoard>(leaderBoardActive);
     const [modalActive, setModalActive] = useState(false);
     const [messageModal, setMessageModalOpen] = useState(false);
     const [messageQuery, setMessageQuery] = useState("");
@@ -96,60 +111,98 @@ const Reports: React.FC<Props> = ({ reports, myReports }) => {
 
     return (
         <>
-            <ScrollArea className="w-full h-full">
-                <div className="grid grid-cols-1 m-5 sm:grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                    {reports.length !== 0 ? (
-                        <>
-                            {Object.values(reports).map((report, index) => {
-                                if (!report)
-                                    return console.log(
-                                        "[DEBUG] (Reports/map) report is null"
-                                    );
-                                return (
-                                    <>
-                                        <div
-                                            key={index}
-                                            onClick={() => {
-                                                setCurrReport(report);
-                                                setModalActive(true);
-                                            }}
-                                            className="flex hover:cursor-pointer transition-all select-none hover:-translate-y-1 flex-col py-1 px-2  bg-secondary border-[2px] border-secondary-foreground rounded text-white"
+            {/* Conditional rendering for Leaderboard */}
+            {whatTab === "leaderboard" ? (
+                <div className="m-5">
+                <h2 className="text-xl font-bold text-white text-center mb-4">Leaderboard</h2>
+                {leaderBoard.length > 0 ? (
+                    <div className="relative overflow-y-auto max-h-[50vh] px-4">  {/* Added padding to the scroll container */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-[80vw] p-8 mx-auto">  {/* Two columns and larger container */}
+                        {leaderBoard.map((player, index) => (
+                                <div
+                                    key={player.id}
+                                    className="flex justify-between items-center bg-secondary border-[2px] border-secondary-foreground rounded p-6 text-white w-full"
+                                >
+                                    <div className="flex items-center">
+                                        <span className="font-bold text-xl">  {/* Larger text */}
+                                            #{index + 1}
+                                        </span>
+                                        <span
+                                            className="ml-4 text-lg truncate max-w-[300px] overflow-hidden whitespace-nowrap"
+                                            title={player.name}
                                         >
-                                            <p className="flex items-center">
-                                                <span className="truncate max-w-[100px] text-sm">
-                                                    {report.title}
-                                                </span>
-                                                <span className="ml-auto bg-background px-1 font-main text-sm">
-                                                    {report.type}
-                                                </span>
-                                                <span className ="ml-auto bg-background px-1 font-main text-sm">
-                                                    {report.claimed ? "Claimed" : "Unclaimed"}
-                                                </span>
-                                            </p>
-                                            <div className="flex items-center mt-2">
-                                                <p className="text-xs rounded-[2px] text-white bg-background text-opacity-50">
-                                                    {report.reportId}
+                                            {player.name}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center ml-12">
+                                        <span className="ml-auto text-md">
+                                            Reports: {player.reports}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-white">There is no data or you do not have access to this page.</p>
+                )}
+            </div>
+        ) : (
+                <ScrollArea className="w-full h-full">
+                    <div className="grid grid-cols-1 m-5 sm:grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                        {reports.length !== 0 ? (
+                            <>
+                                {Object.values(reports).map((report, index) => {
+                                    if (!report)
+                                        return console.log(
+                                            "[DEBUG] (Reports/map) report is null"
+                                        );
+                                    return (
+                                        <>
+                                            <div
+                                                key={index}
+                                                onClick={() => {
+                                                    setCurrReport(report);
+                                                    setModalActive(true);
+                                                }}
+                                                className="flex hover:cursor-pointer transition-all select-none hover:-translate-y-1 flex-col py-1 px-2  bg-secondary border-[2px] border-secondary-foreground rounded text-white"
+                                            >
+                                                <p className="flex items-center">
+                                                    <span className="truncate max-w-[100px] text-sm">
+                                                        {report.title}
+                                                    </span>
+                                                    <span className="ml-auto bg-background px-1 font-main text-sm">
+                                                        {report.type}
+                                                    </span>
+                                                    <span className={`ml-auto bg-background px-1 font-main text-sm ${report.claimed ? "text-green-500" : "text-red-500"}`}>
+                                                        {report.claimed ? "Claimed" : "Unclaimed"}
+                                                    </span>
                                                 </p>
-                                                <p className="ml-auto rounded-[2px] bg-background px-2 font-main text-xs opacity-50">
-                                                    {report.timedate}
-                                                </p>
+                                                <div className="flex items-center mt-2">
+                                                    <p className="text-xs rounded-[2px] text-white bg-background text-opacity-50">
+                                                        {report.reportId}
+                                                    </p>
+                                                    <p className="ml-auto rounded-[2px] bg-background px-2 font-main text-xs opacity-50">
+                                                        {report.timedate}
+                                                    </p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </>
-                                );
-                            })}
-                        </>
-                    ) : (
-                        <>
-                            <div className="font-main">
-                                {myReports
-                                    ? "You have no active reports."
-                                    : "No Reports available."}
-                            </div>
-                        </>
-                    )}
-                </div>
-            </ScrollArea>
+                                        </>
+                                    );
+                                })}
+                            </>
+                        ) : (
+                            <>
+                                <div className="font-main">
+                                    {myReports
+                                        ? "You have no active reports."
+                                        : "No Reports available."}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </ScrollArea>
+            )}
             <Modal
                 opened={modalActive}
                 centered
@@ -334,11 +387,11 @@ const Reports: React.FC<Props> = ({ reports, myReports }) => {
                                 ...currReport,
                                 isMyReportsPage: myReports,
                             };
-
                             fetchNui("reportmenu:nuicb:delete", data);
                             setModalActive(false);
                             setCurrReport(initStateCurrReport);
                         }}
+                        disabled={(!myReports && !currReport.claimed)}
                     >
                         <FaCheck size={16} strokeWidth={2.5} className="mr-1" />
                         {myReports ? "Close" : "Conclude"} Report

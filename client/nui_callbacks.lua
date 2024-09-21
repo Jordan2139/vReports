@@ -87,14 +87,6 @@ RegisterNuiCallback("reportmenu:nuicb:bring", function(data, cb)
     cb({})
 end)
 
-RegisterNUICallback('reportmenu:nuicb:claim', function(data, cb)
-    if not data then return Debug("[reportmenu:nuicb:claim] first param is null.") end
-
-    TriggerServerEvent("reportmenu:server:claim", data)
-
-    cb({})
-end)
-
 RegisterNuiCallback("reportmenu:nuicb:refresh", function(data, cb)
     Debug("[reportmenu:nuicb:refresh] Called.")
     TriggerServerEvent("reportmenu:server:cb:reports")
@@ -104,4 +96,10 @@ end)
 RegisterNuiCallback("reportmenu:nuicb:sendmessage", function(data, cb)
     Debug("[reportmenu:nuicb:sendmessage] data: ", json.encode(data))
     TriggerServerEvent("reportmenu:server:sendmessage", data)
+end)
+
+RegisterNUICallback('reportmenu:nuicb:claim', function(data, cb)
+    if not data then return Debug("[reportmenu:nuicb:claim] first param is null.") end
+    TriggerServerEvent("reportmenu:server:claim", data)
+    cb({})
 end)

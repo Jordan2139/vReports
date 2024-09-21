@@ -81,6 +81,36 @@ GetDiscordAvatar = function(discord_id, player_id)
     return img_url
 end
 
+GetDiscordName = function(discord_id)
+    local username = 'Unknown'
+    if not discord_id then
+        Debug("[func:GetDiscordName] first param is nil.")
+    end
+
+    local fetchMemberData = discordRequest("GET",
+        ("guilds/%s/members/%s"):format(
+            SVConfig["Guild ID"], discord_id),
+        {})
+
+    if not fetchMemberData.code == 200 then
+        Debug(error_codes_defined[fetchMemberData.code])
+    end
+
+    local memberData = json.decode(fetchMemberData.data)
+
+    if memberData then
+        if memberData.nick then
+            username = memberData.nick
+        else
+            username = memberData.user.username
+        end
+    else
+        Debug("[func:GetDiscordName] memberData is nil.")
+    end
+
+    return username
+end
+
 GetDiscordRoles = function(discord_id, player_id)
     if not discord_id then
         return Debug("[func:GetDiscordRoles] first param is nil.")

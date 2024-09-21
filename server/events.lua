@@ -1,16 +1,20 @@
 ---@diagnostic disable: need-check-nil
 
+local currentReportId = 1
+
 ---@param data ActiveReport
 RegisterNetEvent("reportmenu:server:report", function(data)
     if not data then return Debug("[netEvent:reportmenu:server:report] first param is null.") end
-    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    local rint_char = math.random(1, #chars)
-    local rchar = chars:sub(rint_char, rint_char)
+    --local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    --local rint_char = math.random(1, #chars)
+    --local rchar = chars:sub(rint_char, rint_char)
 
     -- This isn't a really good generator but it works for now, i'll re-work it later, but if you have more than 5k reports active i don't know what to tell you.
-    local rint_num = math.random(1, 5000)
+    --local rint_num = math.random(1, 5000)
 
-    local reportId = tostring(rchar .. rint_num)
+    --local reportId = tostring(rchar .. rint_num)
+    local reportId = tostring(currentReportId)
+    currentReportId = currentReportId + 1  -- Increment the counter for next report
     local sourceName = GetPlayerName(source)
 
     data.id = source
@@ -40,8 +44,8 @@ RegisterNetEvent("reportmenu:server:report", function(data)
     FetchWebhook({
         webhook = SVConfig['Webhooks'].ReportSent,
         embed = {
-            title = 'New Report Recieved',
-            description = ('**Report ID**: `%s`'):format(reportId),
+            title = 'New Request Received',
+            description = ('**Request ID**: `%s`'):format(reportId),
             color = '#1a1a1a',
             fields = {
                 {
@@ -50,12 +54,12 @@ RegisterNetEvent("reportmenu:server:report", function(data)
                     inline = true
                 },
                 {
-                    name = 'Report Title',
+                    name = 'Request Title',
                     value = ("`%s`"):format(data.title),
                     inline = true
                 },
                 {
-                    name = 'Report Type',
+                    name = 'Request Type',
                     value = ("`%s`"):format(data.type),
                     inline = true
                 },
@@ -128,10 +132,21 @@ RegisterNetEvent("reportmenu:server:delete", function(data)
 
         TriggerClientEvent("staffchat:client:removemyreport", data.id, data)
 
+        local chatMessage = {
+            color = { 255, 0, 0 }, -- Red color for visibility
+            multiline = true,
+            args = {
+                "[Report System]",
+                string.format("Staff Request ID: ^2%s^0 has been ^1concluded^0 by %s.", data.reportId, sourceName, source)
+            }
+        }
+
         for k, v in pairs(OnlineStaff) do
             ---@diagnostic disable-next-line: param-type-mismatch Reason: it works, even if it's a string or a number.
             TriggerClientEvent("reportmenu:client:update", v.id, ActiveReports)
+            TriggerClientEvent('chat:addMessage', v.id, chatMessage)
         end
+        updateReports(GetDiscordID(source))
     end
 end)
 
@@ -239,41 +254,31 @@ end)
 
 RegisterNetEvent("reportmenu:server:claim", function(data)
     if not data then return Debug("[reportmenu:server:claim] missing first param") end
-
     ---@type ActiveReport
-    local report = data.report
-
+    local report = data
     if not OnlineStaff[tonumber(source)] and report.id ~= source then
         return Debug("[reportmenu:server:claim] Insufficient access perms from source.")
     end
-
     local targetReport = ActiveReports[report.reportId]
-
     if not targetReport then return Debug("[reportmenu:server:claim] report not found.") end
-
     if not targetReport.messages then
         ActiveReports[report.reportId].messages = {}
     end
-
     ActiveReports[report.reportId].messages[#ActiveReports[report.reportId].messages + 1] = {
         playerName = GetPlayerName(source),
         playerId = source,
         data = 'Claimed the report.',
         timedate = ("%s | %s"):format(os.date("%X"), os.date("%x"))
     }
-
     ActiveReports[report.reportId].claimed = true
-
     ---@diagnostic disable-next-line: param-type-mismatch
     TriggerClientEvent("reportmenu:client:updateactivereport", report.id, ActiveReports[report.reportId])
-
     for _, v in pairs(OnlineStaff) do
         ShowNotification({
             target = v.id,
             title = "Report Menu | Report Claimed",
             description = ("The report [%s] has been claimed"):format(report.reportId)
         })
-
         ---@diagnostic disable-next-line: param-type-mismatch Reason: it works, even if it's a string or a number.
         TriggerClientEvent("reportmenu:client:update", v.id, ActiveReports)
     end

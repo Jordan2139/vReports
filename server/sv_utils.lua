@@ -23,17 +23,28 @@ FetchWebhook = function(data)
     data.embed.color = tonumber(data.embed.color:gsub("#", ""), 16)
 
     data.embed.timestamp = os.date('!%Y-%m-%dT%H:%M:%S')
-    data.embed.footer = { ['text'] = 'vReports © 2024' }
+    data.embed.footer = { ['text'] = 'Sunshine State RP © 2024' }
 
-    PerformHttpRequest(data.webhook, function(status, body, headers, errorData)
-        if status == 204 then return end
-
-        Debug(("Status: %s | Body: %s | Headers: %s | errorData: %s"):format(status, body, headers, errorData))
-    end, 'POST', json.encode({
-        username = "vReports",
-        avatar_url = "https://i.imgur.com/BPeqUTG.png",
-        embeds = { data.embed }
-    }), { ["Content-Type"] = "application/json" })
+    if data.embed.title:find("New Request Received") then
+        PerformHttpRequest(data.webhook, function(status, body, headers, errorData)
+            if status == 204 then return end
+            Debug(("Status: %s | Body: %s | Headers: %s | errorData: %s"):format(status, body, headers, errorData))
+        end, 'POST', json.encode({
+            username = "Sunshine State RP Reports",
+            avatar_url = "https://cdn.ssrp.us/images/ssrp.png",
+            embeds = { data.embed },
+            content = "<@&508886727297859587>"
+        }), { ["Content-Type"] = "application/json" })
+    else
+        PerformHttpRequest(data.webhook, function(status, body, headers, errorData)
+            if status == 204 then return end
+            Debug(("Status: %s | Body: %s | Headers: %s | errorData: %s"):format(status, body, headers, errorData))
+        end, 'POST', json.encode({
+            username = "Sunshine State RP Reports",
+            avatar_url = "https://cdn.ssrp.us/images/ssrp.png",
+            embeds = { data.embed },
+        }), { ["Content-Type"] = "application/json" })
+    end
 end
 
 ---@param targetIdentifiers table

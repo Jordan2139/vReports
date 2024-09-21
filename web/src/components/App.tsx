@@ -13,6 +13,7 @@ import { isEnvBrowser } from "../utils/misc";
 import "./App.css";
 import ReportModal from "./reportModal";
 import Reports, { Report } from "./reports";
+import { leaderBoard } from "./reports";
 import { Button } from "./ui/button";
 import {
     DropdownMenu,
@@ -93,6 +94,7 @@ const App: React.FC = () => {
     const [activeReports, setActiveReports] = useState<Report[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [filteredReports, setFilteredReports] = useState<Report[]>([]);
+    const [leaderBoardResults, setLeaderBoardResults] = useState<leaderBoard[]>([]);
     const [myReports, setMyReports] = useState<Report[]>([]);
     const [scriptConfig, setScriptConfig] = useState<ScriptConfig>({
         Debug: true,
@@ -183,6 +185,8 @@ const App: React.FC = () => {
         });
     });
 
+    useNuiEvent('nui:state:leaderboard', setLeaderBoardResults);
+
     useEffect(() => {
         if (!visible) return;
 
@@ -214,7 +218,7 @@ const App: React.FC = () => {
                                             size={18}
                                             className="text-primary mb-[1px]"
                                         />
-                                        Report Menu
+                                        SSRP Report System
                                     </h1>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -296,6 +300,20 @@ const App: React.FC = () => {
                                                     </>
                                                 ),
                                             },
+                                            {
+                                                value: "leaderboard",
+                                                label: (
+                                                    <>
+                                                        <div className="flex justify-center items-center gap-1 text-white">
+                                                            <MdBugReport
+                                                                size={18}
+                                                                className="text-primary mt-[3px]"
+                                                            />
+                                                            Staff Leaderboard
+                                                        </div>
+                                                    </>
+                                                ),
+                                            },
                                         ]}
                                     />
                                     <div className="absolute right-0 top-0 h-full flex items-center justify-center">
@@ -328,11 +346,20 @@ const App: React.FC = () => {
                                                     ? false
                                                     : true
                                             }
+                                            leaderBoard={
+                                                playerData.isStaff
+                                                ? (!searchQuery
+                                                        ? currentTab === "leaderboard"
+                                                            ? leaderBoardResults
+                                                            : []
+                                                        : [])
+                                                    : []
+                                            }
+                                            whatTab={currentTab}
                                         />
                                     )}
                                 </div>
                                 <p className="font-main flex justify-end m-2">
-                                    v1.1.2
                                 </p>
                             </div>
                         </div>

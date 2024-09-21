@@ -4,6 +4,8 @@ OnlineStaff = {}
 ---@type ActiveReport[]
 ActiveReports = {}
 
+staffTracker = {}
+
 AddEventHandler("playerJoining", function(_srcString, _oldId)
     if source <= 0 then
         Debug("(Error) [eventHandler:playerJoining] source is nil, returning.")
@@ -42,3 +44,43 @@ SetTimeout(1000, function()
         end
     end)
 end)
+
+AddEventHandler('onResourceStart', function(resourceName)
+	if (GetCurrentResourceName() ~= resourceName) then
+		return
+	end
+    local staffTrackerFile = LoadResourceFile(resourceName, "tracker.json")
+    local staff = json.decode(staffTrackerFile)
+    print('staffTrackerFile', json.encode(staffTrackerFile))
+    for i = 1, #staff do
+        table.insert(staffTracker, {
+            discord = staff[i].discord,
+            reports = staff[i].reports,
+            discordName = GetDiscordName(staff[i].discord),
+        })
+    end
+    print('sending staffTracker', json.encode(staffTracker))
+    TriggerClientEvent('staffTracker:client:updateTracker', -1, staffTracker)
+end)
+
+AddEventHandler('playerJoining', function()
+    TriggerClientEvent('staffTracker:client:updateTracker', source, staffTracker)
+end)
+
+function updateReports(userId)
+    for i = 1, #staffTracker do
+        if staffTracker[i].discord == userId then
+            staffTracker[i].reports = staffTracker[i].reports + 1
+            SaveResourceFile(GetCurrentResourceName(), "tracker.json", json.encode(staffTracker, { indent = true }), -1)
+            TriggerClientEvent('staffTracker:client:updateTracker', -1, staffTracker)
+            return
+        end
+    end
+    table.insert(staffTracker, {
+        discord = userId,
+        reports = 1,
+        discordName = GetDiscordName(userId),
+    })
+    SaveResourceFile(GetCurrentResourceName(), "tracker.json", json.encode(staffTracker, { indent = true }), -1)
+    TriggerClientEvent('staffTracker:client:updateTracker', -1, staffTracker)
+end
